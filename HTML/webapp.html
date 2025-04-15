@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Game</title>
+  
+  <a href="scratch.html">MT Fly Fishing</a>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: 'Courier New', monospace;
+      color: #fff;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      border: 2px solid #fff;
+      background: #636363;
+      display: none;
+    }
+
+    #score {
+      margin-top: 10px;
+      display: none;
+    }
+
+    #startScreen {
+      text-align: center;
+    }
+
+    #startScreen p {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+    a {
+      color: #fff;
+    }
+    a:hover{text-decoration: underline;
+    font-weight: bold;}
+    a:visited{
+        color:back;
+    } 
+  </style>
+</head>
+<body>
+  <h1>Snake Game</h1>
+  <div id="startScreen">
+    <p>Press any arrow key to start</p>
+    <p>Use ↑ ↓ ← → to move</p>
+  </div>
+  <canvas id="game" width="400" height="400"></canvas>
+  <div id="score">Score: 0</div>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const scoreDisplay = document.getElementById("score");
+    const startScreen = document.getElementById("startScreen");
+    const box = 20;
+    const canvasSize = 400;
+    let score = 0;
+
+    let snake, direction, food, game;
+
+    function initGame() {
+      score = 0;
+      snake = [{ x: 9 * box, y: 10 * box }];
+      direction = "RIGHT";
+      food = {
+        x: Math.floor(Math.random() * (canvasSize / box)) * box,
+        y: Math.floor(Math.random() * (canvasSize / box)) * box
+      };
+      scoreDisplay.innerText = "Score: 0";
+    }
+
+    function startGame() {
+      initGame();
+      startScreen.style.display = "none";
+      canvas.style.display = "block";
+      scoreDisplay.style.display = "block";
+      game = setInterval(draw, 100);
+    }
+
+    document.addEventListener("keydown", function handleStart(event) {
+      const key = event.key;
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(key)) {
+        document.removeEventListener("keydown", handleStart);
+        changeDirection(event);
+        startGame();
+      }
+    });
+
+    function changeDirection(event) {
+      const key = event.key;
+      if (key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      else if (key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+      else if (key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      else if (key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+    }
+
+    document.addEventListener("keydown", changeDirection);
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? "#0f0" : "#0a0";
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      ctx.fillStyle = "#f00";
+      ctx.fillRect(food.x, food.y, box, box);
+
+      let headX = snake[0].x;
+      let headY = snake[0].y;
+
+      if (direction === "UP") headY -= box;
+      if (direction === "DOWN") headY += box;
+      if (direction === "LEFT") headX -= box;
+      if (direction === "RIGHT") headX += box;
+
+      const newHead = { x: headX, y: headY };
+
+      // Game over conditions
+      if (
+        headX < 0 || headX >= canvas.width ||
+        headY < 0 || headY >= canvas.height ||
+        snake.some(segment => segment.x === newHead.x && segment.y === newHead.y)
+      ) {
+        clearInterval(game);
+        alert("Game Over! Your score: " + score);
+        location.reload(); // Reloads the page for a fresh start
+        return;
+      }
+
+      snake.unshift(newHead);
+
+      if (newHead.x === food.x && newHead.y === food.y) {
+        score++;
+        scoreDisplay.innerText = "Score: " + score;
+        food = {
+          x: Math.floor(Math.random() * (canvasSize / box)) * box,
+          y: Math.floor(Math.random() * (canvasSize / box)) * box
+        };
+      } else {
+        snake.pop();
+      }
+    }
+  </script>
+</body>
+</html>
